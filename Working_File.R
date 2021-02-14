@@ -6,6 +6,8 @@ library(stringr)
 library(data.table)
 
 #URL: 
+#this url actually has almost all the data we need
+#we just need to loop through the pages
 url <- "https://www.fueleconomy.gov/feg/PowerSearch.do?action=PowerSearch&year1=2000&year2=2022&cbmkJeep=Jeep&minmsrpsel=0&maxmsrpsel=0&city=0&highway=0&combined=0&cbvtgasoline=Gasoline&YearSel=2000-2022&MakeSel=&MarClassSel=&FuelTypeSel=&VehTypeSel=Gasoline&TranySel=&DriveTypeSel=&CylindersSel=&MpgSel=000&sortBy=&Units=&url=SearchServlet&opt=new&minmsrp=0&maxmsrp=0&minmpg=0&maxmpg=0&sCharge=&tCharge=&startstop=&cylDeact=&rowLimit=200"
 
 #PUll in html data

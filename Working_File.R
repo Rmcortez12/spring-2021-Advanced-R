@@ -141,16 +141,20 @@ for(i in 2:111){
   #Sys.sleep(2)
 }
 
+
+
+test_data <- data
+
 #Regex to get make and then get model
-make_model_func <- function(x){
-  pattern = "[A-Z]+([a-z]+[-][A-Z][a-z]+|[a-z]+)"
-  reg_exp_attributes = regexpr(pattern,x)
+pattern_function <- function(y,x){
+  reg_exp_attributes = regexpr(pattern=y,x)
   match_length = attr(reg_exp_attributes,'match.length')
-  model = regmatches(x,regexpr(pattern,x))
+  model = regmatches(x,regexpr(pattern=y,x))
   make = substr(x,match_length+1,str_length(x))
   make = ifelse(str_length(make)>0,make,model)
   return(c(model,make))
 }
+
 get_make <-function(x){
   a = make_model_func(x)
   return(a[1])
@@ -159,8 +163,51 @@ get_model <-function(x){
   a = make_model_func(x)
   return(a[2])
 }
-test_data <- data
+
+
+make_model_func <- function(x){
+  
+  
+  if(substring(x, 0 ,3)=="BMW"){
+    pattern = "[B][M][W]"
+    info_list <- pattern_function(pattern,x)
+  }
+  else if(substring(x, 0 ,3)=="GMC"){
+    pattern <-  "[G][M][C]"
+    info_list <- pattern_function(pattern,x)
+  }
+  else if(str_to_upper(substring(x,0,4))=="MINI"){
+    pattern <- "[M][I][N][I]"
+    info_list <- pattern_function(pattern,x)
+  }else if(str_to_upper(substring(x,0,5))=="SMART"){
+    pattern <- "[s][m][a][r][t][f][o][r][t][w][o]"
+    info_list <- pattern_function(pattern,x)
+  }
+  else if(str_to_upper(substring(x,0,5))=="SCION"){
+    pattern <- "[S][c][i][o][n]"
+    info_list <- pattern_function(pattern,x)
+  }
+  else if(str_to_upper(substring(x,0,4))=="AUDI"){
+    pattern <- "[A][u][d][i]"
+    info_list <- pattern_function(pattern,x)
+  }
+  else if(str_to_upper(substring(x,0,5))=="ISUZU"){
+    pattern <- "[I][s][u][z][u]"
+    info_list <- pattern_function(pattern,x)
+  }
+  else{
+    pattern = "[A-Z]+([a-z]+[-][A-Z][a-z]+|[a-z]+)"
+    info_list <- pattern_function(pattern, x)
+  }
+  return(info_list)
+}
+
 test_data$VehicleMake <- sapply(test_data$VehicleName, get_make)
 test_data$VehicleModel <- sapply(test_data$VehicleName,get_model)
-head(test_data)
-tail(test_data)
+
+#notice there's still some makes and models together
+#BMW is a big one
+unique(sort(test_data$VehicleMake))
+
+ford_Df = test_data[which(test_data$VehicleMake=="Ford"),]
+

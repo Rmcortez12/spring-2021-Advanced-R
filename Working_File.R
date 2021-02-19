@@ -60,8 +60,7 @@ strip_spec_chars <- function(x){
   return(str_list)
 }
 
-
-#PUll in html data
+#PUll in html data and parse into dataframe
 web_scraper <- function(x){
   x <- url(x,"rb")
   html <- read_html(x)
@@ -150,8 +149,18 @@ make_model_func <- function(x){
   model = regmatches(x,regexpr(pattern,x))
   make = substr(x,match_length+1,str_length(x))
   make = ifelse(str_length(make)>0,make,model)
-  return(model)
+  return(c(model,make))
 }
-
+get_make <-function(x){
+  a = make_model_func(x)
+  return(a[1])
+}
+get_model <-function(x){
+  a = make_model_func(x)
+  return(a[2])
+}
 test_data <- data
-test_data$VehicleMake <- sapply(test_data$VehicleName, make_model_func)
+test_data$VehicleMake <- sapply(test_data$VehicleName, get_make)
+test_data$VehicleModel <- sapply(test_data$VehicleName,get_model)
+head(test_data)
+tail(test_data)

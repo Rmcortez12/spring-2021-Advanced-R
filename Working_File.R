@@ -275,12 +275,39 @@ dt <- setDT(sort_data_year)
 dt_avg <- dt[,.(yearly_avg=mean(mean.d.)),by="year"]
 dt_avg <- sapply(dt_avg,as.numeric)
 
-plot(dt_avg,xlab="Year",ylab="MPG",main = "MPG by Year For all Makes and Models")
+plot(dt_avg,xlab="Year",ylab="MPG",main = "MPG by Year For all Makes and Models",ylim = c(20,30))
 lines(lowess(dt_avg,delta = .00001),col="purple")
-abline(v=2008, lty=2,col="blue")
-#abline(v=2012, lty=2,col="red")
-abline(v=2016, lty=2,col="red")
-abline(v=2020, lty=2,col="blue")
+# abline(v=2008, lty=2,col="blue")
+# #abline(v=2012, lty=2,col="red")
+# abline(v=2016, lty=2,col="red")
+# abline(v=2020, lty=2,col="blue")
+abline(h = 38.5, lty = 2, col="purple")
+abline(h = 29.4, lty = 2, col="red")
+
+cafe <- setDT(wiki_df)
+#write out to csv because getting row means wasn't working 
+write.csv(cafe,file = "cafedata.csv")
+cafe <- setDT(read.csv("cafedata.csv"))
+plot(cafe$Year,cafe$CombinedMPG,xlab = "Year",ylab = "Overall Combined MPG",main = "CAFE Standards Over the Years")
+abline(v=2011, lty=2,col="red")
+abline(v=1980, lty = 2 ,col="red")
+abline(v=1991, lty = 2 ,col="red")
+
+dt_full <- setDT(test_data)
+count_make_total <- count(dt_full$VehicleMake)
+x = droplevels(as.factor(count_make_total$x[count_make_total$freq>1000]))
+y = count_make_total$freq[count_make_total$freq>1000]
+plot(x,y,xlab = "Make", ylab="Number of Models", main = "Total Number of Models by Maker Since 1986\n Greater than 1000 Only")
+
+vehicle_gt1000 <- dt_full[dt_full$VehicleMake == x]
+vehicle_lt1000 <- dt_full[dt_full$VehicleMake != x]
+
+plot(vehicle_gt1000[,.(yearly_avg=mean(MpgCombined)),by="Year"], main= "Comined MPG for Car Makers by Size",ylab = "Combined MPG")
+#plot(x=c(1986,2021),ylim = c(15,30))
+lines(lowess(vehicle_gt1000[,.(yearly_avg=mean(MpgCombined)),by="Year"]))
+points(vehicle_lt1000[,.(yearly_avg=mean(MpgCombined)),by="Year"],pch=2,col="red")
+lines(lowess(vehicle_lt1000[,.(yearly_avg=mean(MpgCombined)),by="Year"],delta = 1),col= "red")
+legend("topleft",legend=c( "> 1000","< 1000"),col=c("black","red"),pch=c(1,2),lty=1)
 
 #enhancements
 #get number of cars sold

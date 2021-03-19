@@ -16,9 +16,9 @@ library("xlsx")
 #pageno=2&tabView=0
 
 #create an empty data frame to populate via loop
-df <- data.frame(matrix(ncol = 11, nrow = 0))
-x <- c("Year","VehicleName","WD","EngineMod","EngineSize","NumCyl","Transmission","FuelType","MpgCombined", "MpgCity","MpgHwy")
-colnames(df) <- x
+# df <- data.frame(matrix(ncol = 11, nrow = 0))
+# x <- c("Year","VehicleName","WD","EngineMod","EngineSize","NumCyl","Transmission","FuelType","MpgCombined", "MpgCity","MpgHwy")
+# colnames(df) <- x
 
 
 #Parse out sub car details from smushed together elements, year, name, wd
@@ -137,20 +137,21 @@ web_scraper <- function(x){
   return(df)
 }
 
-#there are 111 pages
-base_url <- "https://www.fueleconomy.gov/feg/PowerSearch.do?action=noform&year1=1976&year2=2022&cbmkJeep=Jeep&minmsrpsel=0&maxmsrpsel=0&city=0&hwy=0&comb=0&cbvtgasoline=Gasoline&YearSel=2000-2022&make=&mclass=&vfuel=&vtype=Gasoline&trany=&drive=&cyl=&MpgSel=000&sortBy=&Units=&url=SearchServlet&opt=new&minmsrp=0&maxmsrp=0&minmpg=0&maxmpg=0&sCharge=&tCharge=&startstop=&cylDeact=&rowLimit=200&pageno="
+#there are 197 pages
 
-init_url <- paste0(base_url,1)
+#base_url <- "https://www.fueleconomy.gov/feg/PowerSearch.do?action=noform&year1=1976&year2=2022&cbmkJeep=Jeep&minmsrpsel=0&maxmsrpsel=0&city=0&hwy=0&comb=0&cbvtgasoline=Gasoline&YearSel=2000-2022&make=&mclass=&vfuel=&vtype=Gasoline&trany=&drive=&cyl=&MpgSel=000&sortBy=&Units=&url=SearchServlet&opt=new&minmsrp=0&maxmsrp=0&minmpg=0&maxmpg=0&sCharge=&tCharge=&startstop=&cylDeact=&rowLimit=200&pageno="
 
-data <- web_scraper(init_url)
+#init_url <- paste0(base_url,1)
 
-for(i in 2:197){
-  x <- paste0(base_url,i)
-  print(paste0("working on page ",i)) 
-  data <- rbind(data,web_scraper(x))
-  #insert a sleep for closures and to mimic person behavior
-  #Sys.sleep(2)
-}
+#data <- web_scraper(init_url)
+# 
+# for(i in 2:197){
+#   x <- paste0(base_url,i)
+#   print(paste0("working on page ",i)) 
+#   data <- rbind(data,web_scraper(x))
+#   #insert a sleep for closures and to mimic person behavior
+#   #Sys.sleep(2)
+# }
 
 
 
@@ -212,6 +213,7 @@ make_model_func <- function(x){
   }
   return(info_list)
 }
+test_data <- read.csv("webdata.csv")
 
 test_data$VehicleMake <- sapply(test_data$VehicleName, get_make)
 test_data$VehicleModel <- sapply(test_data$VehicleName,get_model)
@@ -267,6 +269,18 @@ plot(sort_data_year[which(sort_data_year$make == "Acura"),]$year,sort_data_year[
 plot(sort_data_year[which(sort_data_year$make == "Ford"),]$year,sort_data_year[which(sort_data_year$make == "Ford"),]$mean.d.,ylab = "Combined MPG",xlab = "Year", main="Ford",type="l")
 
 
+require(data.table)
+dt <- setDT(sort_data_year)
+
+dt_avg <- dt[,.(yearly_avg=mean(mean.d.)),by="year"]
+dt_avg <- sapply(dt_avg,as.numeric)
+
+plot(dt_avg,xlab="Year",ylab="MPG",main = "MPG by Year For all Makes and Models")
+lines(lowess(dt_avg,delta = .00001),col="purple")
+abline(v=2008, lty=2,col="blue")
+#abline(v=2012, lty=2,col="red")
+abline(v=2016, lty=2,col="red")
+abline(v=2020, lty=2,col="blue")
 
 #enhancements
 #get number of cars sold

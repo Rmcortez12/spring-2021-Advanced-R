@@ -22,61 +22,58 @@ library(mapview)
 load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Project2/RealEstate.Rdata?raw=true"))
 load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Project2/latlong.Rdata?raw=true"))
 
-core.state.history$date <- as.Date(paste0(as.character(core.state.history$month_date_yyyymm),'01'),format = '%Y%m%d')
-core.county.history$date <- as.Date(paste0(as.character(core.county.history$month_date_yyyymm),'01'),format = '%Y%m%d')
+#core.state.history$date <- as.Date(paste0(as.character(core.state.history$month_date_yyyymm),'01'),format = '%Y%m%d')
+#core.county.history$date <- as.Date(paste0(as.character(core.county.history$month_date_yyyymm),'01'),format = '%Y%m%d')
 
-get.state.f <- function(x){
-  a <- strsplit(as.character(x),',')
-  b <- stringr::str_trim(a[[1]][2])
-  county <- a[[1]][1]
-  state <- b
-  return(c(county,state))
-  }
+#get.state.f <- function(x){
+#  a <- strsplit(as.character(x),',')
+#  b <- stringr::str_trim(a[[1]][2])
+#  county <- a[[1]][1]
+#  state <- b
+#  return(c(county,state))
+#  }
 
-core.county.history$state <- unlist(lapply(toupper(core.county.history$county_name), function(x) get.state.f(x)[2]))
-core.county.history$county <- unlist(lapply(toupper(core.county.history$county_name), function(x) get.state.f(x)[1]))
+#core.county.history$state <- unlist(lapply(toupper(core.county.history$county_name), function(x) get.state.f(x)[2]))
+#core.county.history$county <- unlist(lapply(toupper(core.county.history$county_name), function(x) get.state.f(x)[1]))
 
-lapply(toupper(core.county.history$county),geo,x=core.county.history$county,y=core.county.history$state,country = "US",method='osm')
-core.county.history$long <- unlist(lapply(toupper(core.county.history), function(x) get.state.f(x)[1]))
-
-x <- core.county.history$county
-y <- core.county.history$state
-country <- rep("US",length(x))
 
 #lat.long <- geo(county = x,state = y,country = country,method='osm')
 #need to save this so we don't have to run again.
 #save(lat.long, file = "latlong.Rdata")
 #test <- tidyr::drop_na(lat.long)
 #load("latlong.Rdata")
-lat.long$price <- core.county.history$median_listing_price/1000
-lat.long$date <- core.county.history$date
-lat.long$year <- core.county.history$year
-lat.long <- tidyr::drop_na(lat.long)
-lat.long2021 <- lat.long[lat.long$year>2020,]
-lat_center <- c(lat.long2021$lat) %>% as.numeric() %>% mean
-long_center <- c(lat.long2021$long) %>% as.numeric() %>% mean
-viz_map <- lat.long2021 %>%
-  leaflet() %>% 
-  addTiles() %>% 
-  addProviderTiles(providers$OpenStreetMap.DE) %>% 
-  setView(long_center,lat_center,6) %>%
-  addHeatmap(lng=~long,lat=~lat,intensity=~price,max=max(lat.long2021$price),radius=10,blur=5)
+#lat.long$price <- core.county.history$median_listing_price/1000
+#lat.long$date <- core.county.history$date
+#lat.long$year <- core.county.history$year
+#lat.long <- tidyr::drop_na(lat.long)
+#save(lat.long, file = "latlong.Rdata")
 
-viz_map
+#lat.long2021 <- lat.long[lat.long$year>2020,]
+# lat_center <- c(lat.long2021$lat) %>% as.numeric() %>% mean
+# long_center <- c(lat.long2021$long) %>% as.numeric() %>% mean
+# viz_map <- lat.long2021 %>%
+#   leaflet() %>% 
+#   addTiles() %>% 
+#   addProviderTiles(providers$OpenStreetMap.DE) %>% 
+#   setView(long_center,lat_center,6) %>%
+#   addHeatmap(lng=~long,lat=~lat,intensity=~price,max=max(lat.long2021$price),radius=10,blur=5)
+# 
+# viz_map
 
 #this map is taking all the years, we need to add years. 
 
 
-core.state.history$year <- format(core.state.history$date,"%Y")
-core.county.history$year <- format(core.county.history$date,"%Y")
+#core.state.history$year <- format(core.state.history$date,"%Y")
+#core.county.history$year <- format(core.county.history$date,"%Y")
 
 
-f <- list(
-  family = "Courier New, monospace",
-  size = 18,
-  color = "#7f7f7f"
-)
 get.label <- function(x){
+  f <- list(
+    family = "Courier New, monospace",
+    size = 18,
+    color = "#7f7f7f"
+  )
+  
   return(list(
     title = x,
     titlefont = f
@@ -84,6 +81,7 @@ get.label <- function(x){
   
 }
   
+Years <- unique(core.state.history$year)
 
 
 library(shiny)
@@ -194,8 +192,9 @@ server <- function(input, output) {
   })
   
   output$map <- renderLeaflet({
-    a <- c(lat.long$year >= input$min & lat.long$year <= input$max)
-    df <- lat.long[a,]
+    boola <- c(lat.long$year >= input$min & lat.long$year <= input$max)
+    print(length(boola))
+    df <- lat.long[boola,]
     lat_center <- c(df$lat) %>% as.numeric() %>% mean
     long_center <- c(df$long) %>% as.numeric() %>% mean
     viz_map <- df %>%

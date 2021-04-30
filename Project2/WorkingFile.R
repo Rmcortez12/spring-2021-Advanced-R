@@ -1,6 +1,6 @@
 library(plotly)
 library(ggplot2)
-library(tidygeocoder)
+#library(tidygeocoder)
 
 library(leaflet)
 library(leaflet.extras)
@@ -19,8 +19,6 @@ library(mapview)
 #hot.metro.history <- read.csv("Hotness_Metrics_Metro_History.csv")
 #save(core.county.history,core.state.history,hot.county.history,hot.metro.history, file = "RealEstate.Rdata")
 
-load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Project2/RealEstate.Rdata?raw=true"))
-load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Project2/latlong.Rdata?raw=true"))
 
 #core.state.history$date <- as.Date(paste0(as.character(core.state.history$month_date_yyyymm),'01'),format = '%Y%m%d')
 #core.county.history$date <- as.Date(paste0(as.character(core.county.history$month_date_yyyymm),'01'),format = '%Y%m%d')
@@ -67,28 +65,20 @@ load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Proje
 #core.county.history$year <- format(core.county.history$date,"%Y")
 
 
-get.label <- function(x){
-  f <- list(
-    family = "Courier New, monospace",
-    size = 18,
-    color = "#7f7f7f"
-  )
-  
-  return(list(
-    title = x,
-    titlefont = f
-  ))
-  
-}
-  
-Years <- unique(core.state.history$year)
 
+
+#load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Project2/RealEstate.Rdata?raw=true"))
+#load(url("https://github.com/Rmcortez12/spring-2021-Advanced-R/blob/master/Project2/latlong.Rdata?raw=true"))
+load("RealEstate.Rdata")
+load("latlong.Rdata")
+
+Years <- unique(core.state.history$year)
 
 library(shiny)
 library(shinythemes)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-  
+
   #theme
   theme = shinytheme("cyborg"),
   
@@ -134,6 +124,23 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  
+  get.label <- function(x){
+    f <- list(
+      family = "Courier New, monospace",
+      size = 18,
+      color = "#7f7f7f"
+    )
+    
+    return(list(
+      title = x,
+      titlefont = f
+    ))
+    
+  }
+  
+  
   
   output$nation <- renderPlotly({
     a <- c(core.state.history$year >= input$min & core.state.history$year <= input$max)
@@ -190,22 +197,21 @@ server <- function(input, output) {
                 selected= "All",
                 multiple = T)
   })
-  
+
   output$map <- renderLeaflet({
     boola <- c(lat.long$year >= input$min & lat.long$year <= input$max)
-    print(length(boola))
-    df <- lat.long[boola,]
+    try(df <- lat.long[boola,])
     lat_center <- c(df$lat) %>% as.numeric() %>% mean
     long_center <- c(df$long) %>% as.numeric() %>% mean
     viz_map <- df %>%
-      leaflet() %>% 
-      addTiles() %>% 
-      addProviderTiles(providers$OpenStreetMap.DE) %>% 
+      leaflet() %>%
+      addTiles() %>%
+      addProviderTiles(providers$OpenStreetMap.DE) %>%
       setView(long_center,lat_center,6) %>%
       addHeatmap(lng=~long,lat=~lat,intensity=~price,max=max(df$price),radius=10,blur=5)
     viz_map
-    
-    
+
+
   })
 }
 
